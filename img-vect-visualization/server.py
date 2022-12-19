@@ -85,6 +85,7 @@ def imgset_2_points():
     task_id = request_data[u"serialNumber"]
     data_info_file = request_data[u"filePath"]
     cal_type = request_data[u"type"]
+    print (u"task id :", task_id)
     
     executor.submit(cvt_imgset_2_points, data_info_file, cal_type, dataset_id, task_id)
     return json.dumps({"code":"OK", "data":"", "message":""})
@@ -155,7 +156,6 @@ def cvt_imgset_2_points(data_info_file, cal_type, dataset_id, task_id):
     fget_objects([{u"minio":data_info_file, u"local":task_data_info}])
     with codecs.open(task_data_info, u"rb", u"utf-8") as f:
         data_info = json.load(f)
-        
     mode = cal_type
     embedding = None
     if cal_type == u"INCREMENT":#之前已经全量计算过该数据集的图片向量，本次只增量更新部分
@@ -196,47 +196,56 @@ def cvt_imgset_2_points(data_info_file, cal_type, dataset_id, task_id):
     #2. 合并向量和更新
     images = [{u"img_id":item[u"id"], u"img_path":item[u"path"]} for item in data_info[u"fullData"]] \
             + [{u"img_id":item[u"id"], u"img_path":item[u"path"]} for item in add_img]
-            
-    np_img_vec, imgid_list, failed_imgids = _image_to_vect(images, dataset_id, task_id)   
-            
-    points = []
-    #若本次新增的图片数，比数据集中原有的图片向量总数还多，则重新计算该数据集的可视化模型
-    if filtered_img_vect is not None and np_img_vec is not None and filtered_img_vect.shape[0] <= np_img_vec.shape[0]:
-        mode = u"FULL"
-        
-    if mode == u"FULL":#用全量数据计算可视化模型
-        if filtered_img_vect is not None:#合成出整个图片集的向量数据
-            np_img_vec = np.concatenate((filtered_img_vect, np_img_vec), axis=0)
-            imgid_list = sorted_imgid + imgid_list  #全量的图片id
-            print (u"image id list length :", len(imgid_list))
-        
-        #重新适配可视化模型
-        tsne = TSNE(perplexity=30, n_jobs=4, n_components=2, metric="euclidean", random_state=0)
-        points = tsne.fit(np_img_vec)#全量的图片点
-        
-        #保存模型到minio
-        with open(local_tsne_embedding, u"wb") as w:
-            pickle.dump(points, w)
-        fput_objects([{u"minio":minio_tsne_embedding, u"local":local_tsne_embedding}])
-        os.remove(local_tsne_embedding)
-        
-    elif mode == u"INCREMENT":
-        points_added = embedding.transform(np_img_vec)
-        if filtered_img_vect is not None:
-            np_img_vec = np.concatenate((filtered_img_vect, np_img_vec), axis=0)
-            points = np.concatenate((filtered_pointset, points_added), axis=0)
-            imgid_list = sorted_imgid + imgid_list
+    print (u"number of new images :", len(images))
+
+    if mode == u"INCREMENT" and len(images)==0:
+        np.save(local_img_vect_path, filtered_img_vect)
+        np.save(local_point_set_path, filtered_pointset)
+        with codecs.open(local_point_set_json_path, u"wb", u"utf-8") as w:
+            json.dump([{u"id":int(idx), u"x":item[0], u"y":item[1]} \
+                    for idx, item in zip(sorted_imgid, filtered_pointset.tolist())], w)
+        print (u"result saved to local disk")
     else:
-        print (u"ERROR : not implemented yet !")
-        return 
-    
-    #结果经由本地文件，上传至minio
-    np.save(local_img_vect_path, np_img_vec)
-    np.save(local_point_set_path, points)
-    with codecs.open(local_point_set_json_path, u"wb", u"utf-8") as w:
-        json.dump([{u"id":int(idx), u"x":item[0], u"y":item[1]} \
-                            for idx, item in zip(imgid_list, points.tolist())], w)
-    print (u"result saved to local disk")
+        np_img_vec, imgid_list, failed_imgids = _image_to_vect(images, dataset_id, task_id)   
+                
+        points = []
+        #若本次新增的图片数，比数据集中原有的图片向量总数还多，则重新计算该数据集的可视化模型
+        if filtered_img_vect is not None and np_img_vec is not None and filtered_img_vect.shape[0] <= np_img_vec.shape[0]:
+            mode = u"FULL"
+            
+        if mode == u"FULL":#用全量数据计算可视化模型
+            if filtered_img_vect is not None:#合成出整个图片集的向量数据
+                np_img_vec = np.concatenate((filtered_img_vect, np_img_vec), axis=0)
+                imgid_list = sorted_imgid + imgid_list  #全量的图片id
+                print (u"image id list length :", len(imgid_list))
+            
+            #重新适配可视化模型
+            tsne = TSNE(perplexity=30, n_jobs=4, n_components=2, metric="euclidean", random_state=0)
+            points = tsne.fit(np_img_vec)#全量的图片点
+            
+            #保存模型到minio
+            with open(local_tsne_embedding, u"wb") as w:
+                pickle.dump(points, w)
+            fput_objects([{u"minio":minio_tsne_embedding, u"local":local_tsne_embedding}])
+            os.remove(local_tsne_embedding)
+            
+        elif mode == u"INCREMENT":
+            points_added = embedding.transform(np_img_vec)
+            if filtered_img_vect is not None:
+                np_img_vec = np.concatenate((filtered_img_vect, np_img_vec), axis=0)
+                points = np.concatenate((filtered_pointset, points_added), axis=0)
+                imgid_list = sorted_imgid + imgid_list
+        else:
+            print (u"ERROR : not implemented yet !")
+            return 
+        
+        #结果经由本地文件，上传至minio
+        np.save(local_img_vect_path, np_img_vec)
+        np.save(local_point_set_path, points)
+        with codecs.open(local_point_set_json_path, u"wb", u"utf-8") as w:
+            json.dump([{u"id":int(idx), u"x":item[0], u"y":item[1]} \
+                                for idx, item in zip(imgid_list, points.tolist())], w)
+        print (u"result saved to local disk")
     
     objects = [
                {u"minio":minio_img_vect_path, u"local":local_img_vect_path},
