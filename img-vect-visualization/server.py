@@ -201,7 +201,7 @@ def cvt_imgset_2_points(data_info_file, cal_type, dataset_id, task_id):
             
     points = []
     #若本次新增的图片数，比数据集中原有的图片向量总数还多，则重新计算该数据集的可视化模型
-    if filtered_img_vect is not None and filtered_img_vect.shape[0] <= np_img_vec.shape[0]:
+    if filtered_img_vect is not None and np_img_vec is not None and filtered_img_vect.shape[0] <= np_img_vec.shape[0]:
         mode = u"FULL"
         
     if mode == u"FULL":#用全量数据计算可视化模型
