@@ -1,6 +1,6 @@
 # img-vect-visualization
 
-To convert the given image dataset into vect list, visualization them on X1 platform. The function helps you to discover similar images
+To convert the given image dataset into vect list, visualization them on X1 platform. This function helps you to discover similar images
 
 * to startup service:
 
