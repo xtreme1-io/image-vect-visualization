@@ -267,10 +267,10 @@ if __name__ == '__main__':
     parser.add_argument('--port', type=int, default=18881, help='service port')
     parser.add_argument('--threads-in-pool', type=int, default=2, help='线程池的规模')
     parser.add_argument('--vect-dim', type=int, default=256, help='图片向量的维度大小')
-    parser.add_argument('--minio-endpoint', type=str, default='basicai-dataset-tmp-minio-endpoint.alidev.beisai.com', 
+    parser.add_argument('--minio-endpoint', type=str, default='http://minio:9000/', 
                         help='minio地址')
     parser.add_argument('--minio-access-key', type=str, default='admin', help='')
-    parser.add_argument('--minio-secret-key', type=str, default='QeL71XTy', help='')
+    parser.add_argument('--minio-secret-key', type=str, default='1tQB970y', help='')
     parser.add_argument('--point-bucket-name', type=str, default='point-set', help='')
     parser.add_argument('--img-vect-bucket-name', type=str, default='img-vect', help='')
     parser.add_argument('--embedding-bucket-name', type=str, default='embedding', help='')
