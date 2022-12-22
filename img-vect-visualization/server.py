@@ -267,7 +267,7 @@ if __name__ == '__main__':
     parser.add_argument('--port', type=int, default=18881, help='service port')
     parser.add_argument('--threads-in-pool', type=int, default=2, help='线程池的规模')
     parser.add_argument('--vect-dim', type=int, default=256, help='图片向量的维度大小')
-    parser.add_argument('--minio-endpoint', type=str, default='http://minio:9000/', 
+    parser.add_argument('--minio-endpoint', type=str, default='minio:9000', 
                         help='minio地址')
     parser.add_argument('--minio-access-key', type=str, default='admin', help='')
     parser.add_argument('--minio-secret-key', type=str, default='1tQB970y', help='')
