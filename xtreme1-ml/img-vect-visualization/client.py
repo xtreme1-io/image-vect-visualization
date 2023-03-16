@@ -1,6 +1,5 @@
 #-*- encoding:utf-8 -*-
 '''
-示例客户端
 '''
 import json
 import requests
@@ -20,7 +19,7 @@ def post_data(request_url, data):
    
    
 def model_call(data_dic):
-    request_url = u"http://61.51.222.12:18881/api/v1/calcSimilarity"  #服务的地址
+    request_url = u"http://61.51.222.12:18881/api/v1/calcSimilarity"  
        
     resp = post_data(request_url, data_dic)
     print (resp.text)
@@ -29,7 +28,6 @@ def model_call(data_dic):
    
 if __name__ == '__main__':
     '''
-    #全量计算并可视化
     d = {
   "datasetId":10,
   "serialNumber":"lycan_test_full",
