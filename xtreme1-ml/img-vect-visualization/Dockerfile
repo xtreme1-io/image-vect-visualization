@@ -1,8 +1,8 @@
 FROM basicai/xtreme1-image-vect-visualization-cpu
 
-RUN RUN pip install umap-learn==0.5.3
+RUN pip install umap-learn==0.5.3
 
-RUN rm -rf /home
+RUN rm -rf /home/*
 
 COPY server.py /home
 
