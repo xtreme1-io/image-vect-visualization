@@ -1,15 +1,21 @@
-# img-vect-visualization
+# Image Vector Visualization
 
-To convert the given image dataset into vect list, visualization them on X1 platform. This function helps you to discover similar images
+To convert the given image dataset into vect list, visualization them on X1 platform. This function helps you to discover similar images.
 
-* to startup service:
+* Start service using CPU:
 
-python server.py 
+```bash
+python server.py
+```
 
-* to startup service in GPU mode:
+* Start service using GPU:
 
+```bash
 python server.py --device=cuda
+```
 
-* test service with demo client:
+* Test
 
+```bash
 python client.py
+```
