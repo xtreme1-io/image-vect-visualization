@@ -1,4 +1,4 @@
-FROM ubuntu:3.8-bullseye
+FROM python:3.8-bullseye
 
 RUN pip install umap-learn==0.5.3
 
