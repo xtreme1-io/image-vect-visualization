@@ -6,6 +6,7 @@ RUN apt-get update && \
 WORKDIR /app
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
+RUN wget -P $HOME/.cache/torch/hub/checkpoints/ https://download.pytorch.org/models/mobilenet_v3_small-047dcff4.pth mobilenet_v3_small-047dcff4.pth
 
 COPY . ./
 
